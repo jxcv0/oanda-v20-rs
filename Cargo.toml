@@ -2,6 +2,10 @@
 name = "oanda-v20-rs"
 version = "0.0.0"
 edition = "2024"
+license = "MIT"
+license-file = "LICENSE"
+repository = "https://github.com/jxcv0/oanda-v20-rs.git"
+description = "A Rust client for the OANDA v20 REST and Streaming APIs. The aim is a small, composable core you can plug into your own trading stack."
 
 [dependencies]
 anyhow = "1.0.99"
