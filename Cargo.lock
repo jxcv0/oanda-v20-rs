@@ -910,8 +910,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "oanda-v20"
-version = "0.1.0"
+name = "oanda-v20-rs"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "clap",

@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use anyhow::Result;
 use clap::Parser;
 use reqwest::{Client, RequestBuilder, StatusCode, Url};
