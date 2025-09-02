@@ -1,9 +1,9 @@
 #![doc = include_str!("../README.md")]
 
 use anyhow::Result;
-use clap::Parser;
 use reqwest::{Client, RequestBuilder, StatusCode, Url};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 
 #[derive(Deserialize, Debug)]
 pub struct AccountProperties {
@@ -17,6 +17,46 @@ pub struct AccountProperties {
 #[derive(Deserialize, Debug)]
 struct AccountsResponse {
     accounts: Vec<AccountProperties>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "UPPERCASE")]
+enum GuaranteedStopLossOrderMutability {
+    Fixed,
+    Replaceable,
+    Cancelable,
+    PriceWidenOnly,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct GuaranteedStopLossOrderParameters {
+    mutability_market_open: GuaranteedStopLossOrderMutability,
+    mutability_market_halted: GuaranteedStopLossOrderMutability
+}
+
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "UPPERCASE")]
+enum GuaranteedStopLossOrderMode {
+    Disabled,
+    Allowed,
+    Required,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Account {
+    id: String,
+    alias: Option<String>,
+    currency: String,
+    // #[serde(rename = "createdByUserID")]
+    created_by_user_id: u8,
+    created_time: OffsetDateTime,
+    guaranteed_stop_loss_order_parameters: GuaranteedStopLossOrderParameters,
+    #[serde(rename = "resetablePLTime")]
+    resetable_pl_time: OffsetDateTime,
+    margin_rate: String // Decimal number
 }
 
 pub struct V20Context {
@@ -62,6 +102,16 @@ impl V20Context {
         let bytes = res.error_for_status()?.bytes().await?;
         let acc: AccountsResponse = serde_json::from_slice(&bytes)?;
         Ok(acc.accounts)
+    }
+
+    pub async fn account(&self, account_id: &str) -> Result<()> {
+        let url = self
+            .rest_hostname
+            .join(&format!("/v3/accounts/{}", account_id))?;
+        let res = self.auth(self.http.get(url)).send().await?;
+        let bytes = res.error_for_status()?.bytes().await?;
+        // let acc: AccountsResponse = serde_json::from_slice(&bytes)?;
+        Ok(())
     }
 }
 
