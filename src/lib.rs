@@ -1,5 +1,7 @@
 #![doc = include_str!("../README.md")]
 
+use std::collections::HashMap;
+
 use anyhow::Result;
 use reqwest::{Client, RequestBuilder, StatusCode, Url};
 use serde::{Deserialize, Serialize};
@@ -24,7 +26,7 @@ pub struct AccountsResponse {
 pub struct SingleAccountResponse {
     account: Account,
     #[serde(rename = "lastTransactionID")]
-    last_transaction_id: TransactionID
+    last_transaction_id: TransactionID,
 }
 
 #[derive(Deserialize, Debug)]
@@ -40,9 +42,8 @@ enum GuaranteedStopLossOrderMutability {
 #[serde(rename_all = "camelCase")]
 struct GuaranteedStopLossOrderParameters {
     mutability_market_open: GuaranteedStopLossOrderMutability,
-    mutability_market_halted: GuaranteedStopLossOrderMutability
+    mutability_market_halted: GuaranteedStopLossOrderMutability,
 }
-
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
@@ -61,29 +62,27 @@ type AccountUnits = String;
 type PriceValue = String;
 
 #[derive(Deserialize, Debug)]
-struct TradeSummary {
-}
+struct TradeSummary {}
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct Order {
-}
+struct Order {}
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct PositionSide {
-    units : DecimalNumber,
-    average_price : PriceValue,
+    units: DecimalNumber,
+    average_price: PriceValue,
     #[serde(rename = "tradeIDs")]
-    trade_ids : Vec<TradeID>,
-    pl : AccountUnits,
+    trade_ids: Vec<TradeID>,
+    pl: AccountUnits,
     #[serde(rename = "unrealizedPL")]
-    unrealized_pl : AccountUnits,
+    unrealized_pl: AccountUnits,
     #[serde(rename = "resettablePL")]
-    resettable_pl : AccountUnits,
-    financing : AccountUnits,
-    dividend_adjustment : AccountUnits,
-    guaranteed_execution_fees : AccountUnits
+    resettable_pl: AccountUnits,
+    financing: AccountUnits,
+    dividend_adjustment: AccountUnits,
+    guaranteed_execution_fees: AccountUnits,
 }
 
 #[derive(Deserialize, Debug)]
@@ -93,17 +92,16 @@ struct Position {
     pl: AccountUnits,
     #[serde(rename = "unrealizedPL")]
     unrealized_pl: AccountUnits,
-    margin_used : AccountUnits,
+    margin_used: AccountUnits,
     #[serde(rename = "resettablePL")]
-    resettable_pl : AccountUnits,
-    financing : AccountUnits,
-    commission : AccountUnits,
-    dividend_adjustment : AccountUnits,
-    guaranteed_execution_fees : AccountUnits,
-    long : PositionSide,
-    short : PositionSide,
+    resettable_pl: AccountUnits,
+    financing: AccountUnits,
+    commission: AccountUnits,
+    dividend_adjustment: AccountUnits,
+    guaranteed_execution_fees: AccountUnits,
+    long: PositionSide,
+    short: PositionSide,
 }
-
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -125,9 +123,9 @@ struct Account {
     unrealized_pl: String, // TODO: This is a decimal number
     #[serde(rename = "NAV")]
     nav: String, // TODO: This is a decimal number
-    margin_used: String, // TODO: this is a decimal number
+    margin_used: String,      // TODO: this is a decimal number
     margin_available: String, // TODO: this is a decimal number
-    position_value: String, // TODO: this is a decimal number
+    position_value: String,   // TODO: this is a decimal number
     #[serde(rename = "marginCloseoutUnrealizedPL")]
     margin_closeout_unrealized_pl: String, // TODO: this is a decimal number
     margin_closeout_percent: String, // TODO: this is a decimal number
@@ -144,13 +142,38 @@ struct Account {
     dividend_adjustment: AccountUnits,
     guaranteed_execution_fees: AccountUnits,
     margin_call_enter_time: OffsetDateTime,
-    margin_call_extension_count : i32,
-    last_margin_call_extension_time : OffsetDateTime,
+    margin_call_extension_count: i32,
+    last_margin_call_extension_time: OffsetDateTime,
     #[serde(rename = "lastTransactionID")]
     last_transaction_id: TransactionID,
-    trades : Vec<TradeSummary>,
-    positions : Vec<Position>,
-    orders : Vec<Order>
+    trades: Vec<TradeSummary>,
+    positions: Vec<Position>,
+    orders: Vec<Order>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum CandlestickGranularity {
+    S5,
+    S10,
+    S15,
+    S30,
+    M1,
+    M2,
+    M4,
+    M5,
+    M10,
+    M15,
+    M30,
+    H1,
+    H2,
+    H3,
+    H4,
+    H6,
+    H8,
+    H12,
+    D,
+    W,
+    M,
 }
 
 pub struct V20Context {
@@ -206,6 +229,25 @@ impl V20Context {
         let bytes = res.error_for_status()?.bytes().await?;
         let acc: SingleAccountResponse = serde_json::from_slice(&bytes)?;
         Ok(acc)
+    }
+
+    pub async fn candles(&self, instrument: &str, pricing_component: &str, granularity: &str) -> Result<()> {
+        let mut query = HashMap::new();
+        query.insert("price", pricing_component);
+        query.insert("granularity", granularity);
+
+
+
+        let url = self
+            .rest_hostname
+            .join(&format!("/v3/instrument/{}/candles", instrument))?;
+        let res = self.auth(self.http.get(url))
+            .query(&query)
+            .send().await?;
+
+        let bytes = res.error_for_status()?.bytes().await?;
+        // let acc: SingleAccountResponse = serde_json::from_slice(&bytes)?;
+        Ok(())
     }
 }
 
