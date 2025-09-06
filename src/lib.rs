@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 
-pub use oanda_v20_gen::*;
+pub use oanda_v20_openapi::*;
 
 #[cfg(test)]
 mod tests {

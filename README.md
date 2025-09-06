@@ -6,7 +6,7 @@
 >
 > **Risk warning:** Trading foreign exchange (FX) involves significant risk of loss and is not suitable for all investors. Nothing in this project constitutes financial advice.
 
-A Rust client for the OANDA v20 REST and Streaming APIs. The aim is a small, composable core you can plug into your own trading stack.
+A Rust client for the OANDA v20 REST and Streaming APIs.
 
 ## Install
 
