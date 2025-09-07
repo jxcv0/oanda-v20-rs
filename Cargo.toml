@@ -7,7 +7,7 @@ repository = "https://github.com/jxcv0/oanda-v20-rs.git"
 description = "A Rust client for the OANDA v20 REST and Streaming APIs"
 
 [dependencies]
-oanda-v20-openapi = "3.0.25"
+oanda-v20-openapi = "0.1.0"
 
 [dev-dependencies]
 wiremock = "0.6.5"
