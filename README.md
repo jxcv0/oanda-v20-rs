@@ -18,3 +18,9 @@ Pull requests are welcome.
 > Run these tests at your own risk.
 
 The integration tests (`tests/*_integration.rs`) require two environment variables `API_TOKEN` and `ACCOUNT_ID` to be defined.
+
+To run the tests:
+
+```bash
+cargo test -- --ignored
+```
